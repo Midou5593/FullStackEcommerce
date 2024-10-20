@@ -1,42 +1,98 @@
-import { NextFunction ,Request, Response} from "express";
+import { NextFunction, Request, Response } from "express";
+import { db } from "../../db";
+import { productsTable as products } from "../../db/productsSchema";
+import { eq } from "drizzle-orm";
 
-export const getAllProducts =  (req: Request, res: Response, next: NextFunction) => {
- 
-    res.json({message: "List of products"});
+export const getAllProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const listProducts = await db.select().from(products);
+    res.json({ message: "List of products", listProducts });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+    next(error);
+  }
 };
 
-export const getProductById = async (req: Request, res: Response, next: NextFunction) => {
+export const getProductById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const product = req.params.id;
-    res.json({ message: `Product with id ${product}` });
+    const { id } = req.params;
+    const [product] = await db
+      .select()
+      .from(products)
+      .where(eq(products.id, Number(id)));
+    if (!product) {
+      res.status(404).json({ message: `Product with id ${id} not found` });
+      return;
+    }
+    res.json({ message: `Product with id ${product.id}`, product });
   } catch (error) {
     next(error);
   }
 };
 
-export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
+export const createProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const product = req.body;
+    const [product] = await db.insert(products).values(req.body).returning();
 
-    res.json(product);
+    res.status(201).json({ message: "Product created", product });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+    next(error);
+  }
+};
+
+export const updateProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = Number(req.params.id);
+    const updatedFields = req.body;
+    const [productUpdated] = await db
+      .update(products)
+      .set(updatedFields)
+      .where(eq(products.id, id))
+      .returning();
+    if (!productUpdated) {
+      res.status(404).json({ message: `Product with id ${id} not found` });
+      return;
+    }
+    res.json({ message: "Product updated", productUpdated });
   } catch (error) {
     next(error);
   }
 };
 
-export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const product = req.body;
-    res.json({ message: `Product updated ${product}` });
-  } catch (error) {
-    next(error);
-  }
-};
+    const id = Number(req.params.id);
+    const [productDeleted] = await db
+      .delete(products)
+      .where(eq(products.id, id))
+      .returning();
+    if (!productDeleted) {
+      res.status(404).json({ message: `Product with id ${id} not found` });
+      return;
+    }
 
-export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const product = req.params.id;
-    res.json({ message: `Product deleted ${product}` });
+    res.status(204).json({ message: `Product deleted ${productDeleted}` });
   } catch (error) {
     next(error);
   }
