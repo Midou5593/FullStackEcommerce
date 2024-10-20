@@ -17,7 +17,8 @@ export const getProductById = async (req: Request, res: Response, next: NextFunc
 export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const product = req.body;
-    res.json({ message: `Product created ${product}` });
+
+    res.json(product);
   } catch (error) {
     next(error);
   }
