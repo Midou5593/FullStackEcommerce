@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { db } from "../../db";
-import { productsTable as products } from "../../db/productsSchema";
+import { productsTable as products,createProductSchema } from "../../db/productsSchema";
 import { eq } from "drizzle-orm";
+import _ from "lodash";
+
 
 export const getAllProducts = async (
   req: Request,
@@ -44,7 +46,8 @@ export const createProduct = async (
   next: NextFunction
 ) => {
   try {
-    const [product] = await db.insert(products).values(req.body).returning();
+   
+    const [product] = await db.insert(products).values(req.cleanBody).returning();
 
     res.status(201).json({ message: "Product created", product });
   } catch (error) {
@@ -60,7 +63,7 @@ export const updateProduct = async (
 ) => {
   try {
     const id = Number(req.params.id);
-    const updatedFields = req.body;
+    const updatedFields = req.cleanBody;
     const [productUpdated] = await db
       .update(products)
       .set(updatedFields)
