@@ -1,9 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import { db } from "../../db";
-import { productsTable as products,createProductSchema } from "../../db/productsSchema";
+import { db } from "../../db/index.js";
+import {
+  productsTable as products,
+  createProductSchema,
+} from "../../db/productsSchema.js";
 import { eq } from "drizzle-orm";
 import _ from "lodash";
-
 
 export const getAllProducts = async (
   req: Request,
@@ -45,9 +47,13 @@ export const createProduct = async (
   res: Response,
   next: NextFunction
 ) => {
+  console.log(req.body);
+
   try {
-   
-    const [product] = await db.insert(products).values(req.cleanBody).returning();
+    console.log("====================================");
+    console.log(req.userId);
+    console.log("====================================");
+    const [product] = await db.insert(products).values(req.body).returning();
 
     res.status(201).json({ message: "Product created", product });
   } catch (error) {

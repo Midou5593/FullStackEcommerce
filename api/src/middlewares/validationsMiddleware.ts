@@ -1,13 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import _ from "lodash";
-import { createProductSchema } from "../db/productsSchema";
+import { createProductSchema } from "../db/productsSchema.js";
 import { z, ZodError } from "zod";
+import { createUserSchema } from "../db/usersSchema.js";
 
 export function validateData(schema: z.ZodObject<any, any>) {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       schema.parse(req.body);
       req.cleanBody = _.pick(req.body, Object.keys(createProductSchema.shape));
+      req.cleanBody = _.pick(req.body, Object.keys(createUserSchema.shape));
       next();
     } catch (error) {
       if (error instanceof ZodError) {
@@ -18,10 +20,12 @@ export function validateData(schema: z.ZodObject<any, any>) {
           error: "Invalid data",
           details: errorMessages,
         });
+        return;
       } else {
         res.status(500).json({
           error: "Internal server error",
         });
+        return;
       }
     }
   };

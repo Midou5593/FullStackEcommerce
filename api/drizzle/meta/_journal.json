@@ -8,6 +8,20 @@
       "when": 1729400536312,
       "tag": "0000_daily_magma",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1729569601028,
+      "tag": "0001_lazy_spacker_dave",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1730264866545,
+      "tag": "0002_brief_shiver_man",
+      "breakpoints": true
     }
   ]
 }
